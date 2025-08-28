@@ -1,0 +1,135 @@
+---
+extract_email_artifacts:
+  description: 'Parse the raw email file ({email_file}) in EML format and extract
+    all critical forensic artifacts. Extract and structure: sender information (From,
+    Return-Path, Reply-To), authentication headers (HELO/EHLO), complete Received
+    chain for mail path analysis, subject line, message body content, URL extraction
+    from body and headers, attachment metadata including filenames, content types,
+    and file hashes. Preserve complete forensic integrity and create a comprehensive
+    evidence object for downstream analysis agents.'
+  expected_output: 'A structured JSON evidence object containing all extracted email
+    artifacts: headers (From, To, Subject, Date, Message-ID, Return-Path, Reply-To),
+    authentication headers, complete Received chain, message body content, extracted
+    URLs, attachment metadata (names, types, sizes, hashes), and any anomalies detected
+    during parsing. Include raw header preservation for forensic audit trail.'
+  agent: email_artifact_extractor
+validate_email_authentication:
+  description: Perform comprehensive email authentication validation on the extracted
+    email artifacts. Analyze SPF records by checking sender IP authorization, validate
+    DKIM signatures and key records, examine DMARC policies and alignment requirements.
+    Check domain alignment between From header and SPF/DKIM signing domains. Identify
+    authentication failures, soft-fails, policy violations, and missing authentication
+    records. Document the complete authentication chain and any policy misconfigurations.
+  expected_output: 'A structured authentication report with specific results for each
+    protocol: SPF validation status (Pass/Fail/SoftFail/None), DKIM signature verification
+    results, DMARC policy evaluation and alignment check results. Include detailed
+    rationale for each authentication decision, policy enforcement recommendations,
+    and identified vulnerabilities or misconfigurations in the authentication chain.'
+  agent: authentication_validator
+  context:
+  - extract_email_artifacts
+enrich_threat_intelligence:
+  description: Perform comprehensive OSINT analysis and threat intelligence enrichment
+    on email artifacts. Conduct WHOIS/DNS lookups for sender domains to determine
+    registration date, registrar, and DNS configuration. Perform IP geolocation and
+    ASN mapping for sending servers. Query VirusTotal API for domain/IP/URL reputation
+    analysis and threat feed matches. Analyze attachment hashes against malware databases.
+    Correlate findings across multiple intelligence sources and provide contextual
+    risk assessment for each indicator.
+  expected_output: 'A comprehensive threat intelligence report including: domain analysis
+    (age, registrar, DNS records, reputation scores), IP intelligence (geolocation,
+    ASN, reputation), URL analysis and threat categorization, attachment hash analysis
+    results, VirusTotal detection ratios and threat classifications. Include contextual
+    risk indicators such as newly registered domains, suspicious geolocation patterns,
+    and positive threat feed matches with confidence scores.'
+  agent: threat_intelligence_enricher
+  context:
+  - extract_email_artifacts
+detect_header_anomalies:
+  description: Analyze email artifacts for technical and structural anomalies that
+    indicate spoofing or manipulation attempts. Identify header inconsistencies including
+    From vs Return-Path mismatches, display name spoofing patterns, homoglyph domain
+    usage, and suspicious EHLO/HELO values. Examine MIME structure for content type
+    inconsistencies, suspicious file extensions, encoding anomalies, and malformed
+    headers. Analyze the Received chain for unusual relay patterns, timestamp inconsistencies,
+    and suspicious mail server configurations.
+  expected_output: 'A detailed anomaly report cataloging all identified structural
+    and header irregularities with severity classifications. Include specific findings
+    for: header mismatches and inconsistencies, display name and domain spoofing attempts,
+    homoglyph character analysis results, MIME structure anomalies, suspicious file
+    extension patterns, Received chain analysis with timing and routing anomalies.
+    Provide risk scores for each anomaly type and recommendations for further investigation.'
+  agent: header_anomaly_detector
+  context:
+  - extract_email_artifacts
+analyze_psychological_manipulation:
+  description: Conduct comprehensive linguistic and psychological analysis of the
+    email content to identify social engineering tactics and manipulation attempts.
+    Analyze for fear/intimidation language, urgency creation techniques, greed/reward
+    exploitation, authority impersonation patterns, curiosity hooks, and sympathy/guilt
+    appeals. Examine grammar, spelling, and linguistic patterns for inconsistencies.
+    Evaluate tone alignment with purported sender identity and brand consistency.
+    Score confidence levels for each manipulation tactic detected.
+  expected_output: 'A structured psychological manipulation assessment report containing:
+    identified social engineering tactics with confidence scores, linguistic anomaly
+    analysis (grammar, spelling, tone inconsistencies), brand impersonation indicators,
+    emotional manipulation technique classification, authority exploitation patterns,
+    and overall psychological threat assessment. Include specific text excerpts supporting
+    each finding and recommendations for user awareness training based on identified
+    manipulation vectors.'
+  agent: psychological_manipulation_detector
+  context:
+  - extract_email_artifacts
+synthesize_ai_analysis:
+  description: Perform holistic AI-driven analysis by synthesizing all evidence from
+    upstream agents including authentication results, threat intelligence findings,
+    structural anomalies, and psychological indicators. Apply advanced reasoning to
+    identify correlations between technical and behavioral indicators. Generate preliminary
+    threat classification with detailed confidence assessment and explanatory reasoning.
+    Identify key decision factors and potential investigation paths for complex cases.
+  expected_output: 'A comprehensive AI synthesis report containing: integrated threat
+    assessment combining all analytical dimensions, correlation analysis between technical
+    and behavioral indicators, preliminary threat classification (Likely Benign/Suspicious/Likely
+    Malicious), confidence scores with detailed reasoning, key evidence correlation
+    patterns, recommended investigation priorities, and explainable AI decision factors
+    that influenced the preliminary assessment. Include uncertainty areas requiring
+    human review.'
+  agent: holistic_ai_analyst
+  context:
+  - validate_email_authentication
+  - enrich_threat_intelligence
+  - detect_header_anomalies
+  - analyze_psychological_manipulation
+make_final_risk_decision:
+  description: 'Execute final deterministic risk scoring and decision-making by applying
+    weighted algorithms to all agent outputs. Correlate high-confidence threat indicators,
+    apply business risk tolerance parameters, and generate definitive risk classification:
+    Benign, Suspicious (requires analyst review), or Malicious (immediate containment
+    required). Document complete decision rationale showing how each factor contributed
+    to the final verdict. Include recommended response actions and escalation procedures.'
+  expected_output: 'A definitive risk decision report containing: final risk classification
+    (Benign/Suspicious/Malicious), weighted risk score calculation, complete decision
+    rationale with factor contributions, recommended immediate actions (allow/quarantine/block),
+    escalation requirements, incident response procedures, and audit trail of all
+    decision factors. Include confidence intervals and recommended review timelines
+    for suspicious classifications.'
+  agent: risk_decision_arbiter
+  context:
+  - synthesize_ai_analysis
+generate_security_reports:
+  description: Compile comprehensive security incident reports in both PDF and JSON
+    formats using all analysis results. Create executive summary for management briefing,
+    detailed technical findings section for SOC analysts, complete indicators of compromise
+    (IOCs) catalog, final verdict with full rationale tracing, and actionable response
+    recommendations. Ensure reports meet compliance requirements and provide clear
+    audit trails for all security decisions made during the analysis process.
+  expected_output: 'Two comprehensive security reports: 1) A professional PDF report
+    with executive summary, detailed analysis sections, IOC catalog, decision rationale,
+    and response recommendations suitable for management and compliance. 2) A structured
+    JSON report containing all technical data, agent findings, evidence artifacts,
+    decision trees, and metadata for automated processing and integration with security
+    tools. Both reports must include complete audit trails and transparent reasoning
+    for all conclusions.'
+  agent: security_report_archivist
+  context:
+  - make_final_risk_decision
